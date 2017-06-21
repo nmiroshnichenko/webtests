@@ -20,6 +20,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
                 <configuration>
                     <source>${javaVersion}</source>
                     <target>${javaVersion}</target>
@@ -28,11 +29,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20</version>
                 <configuration>
                     <properties>
                         <property>
                             <name>usedefaultlisteners</name>
-                            <value>false</value>
+                            <value>true</value>
                         </property>
                     </properties>
                     <suiteXmlFiles>
@@ -69,13 +71,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
+            <version>1.7.25</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
+            <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
         <!-- add commons logging to slf4j bridge to classpath -->
@@ -83,7 +85,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.12</version>
+            <version>1.7.25</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
