@@ -1,8 +1,6 @@
 package ru.tinkoff.payments;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import ru.tinkoff.AbstractTest;
@@ -24,10 +22,9 @@ public class CommunalPaymentsTest extends AbstractTest {
         .assureOrSwitchRegion("Москв");
 
     String firstPaymentProvider = mainPage.getPaymentTitles().stream().findFirst().get();
-    assert Objects.equals(firstPaymentProvider, FIRST_PAYMENT_PROVIDER)
-        : "unexpected first payment provider: " + firstPaymentProvider;
-    mainPage.clickPayment(FIRST_PAYMENT_PROVIDER);
+    assertThat(firstPaymentProvider).as("first payment provider").isEqualTo(FIRST_PAYMENT_PROVIDER);
 
+    mainPage.clickPayment(FIRST_PAYMENT_PROVIDER);
     mainPage.clickRenderPayment();
     firstPaymentProviderUrl = mainPage.getCurrentPageUrl();
   }
@@ -92,7 +89,7 @@ public class CommunalPaymentsTest extends AbstractTest {
   }
 
   private void checkInvalidFieldValues(String expectedError, String actualError) {
-    assert Objects.equals(actualError, expectedError) : "unexpected error: " + actualError;
+    assertThat(actualError).as("error message").isEqualTo(expectedError);
     mainPage.refreshPage();
   }
 
@@ -108,13 +105,11 @@ public class CommunalPaymentsTest extends AbstractTest {
         .searchFor(FIRST_PAYMENT_PROVIDER);
 
     String firstSearchResultTitle = mainPage.getSearchResultsTitles().get(0);
-    assert Objects.equals(firstSearchResultTitle, FIRST_PAYMENT_PROVIDER) :
-        "unexpected first title: " + firstSearchResultTitle + " should be: " + FIRST_PAYMENT_PROVIDER;
+    assertThat(firstSearchResultTitle).as("first search result title").isEqualTo(FIRST_PAYMENT_PROVIDER);
 
     mainPage.clickSearchResult(FIRST_PAYMENT_PROVIDER);
     String currentPageUrl = mainPage.getCurrentPageUrl();
-    assert Objects.equals(currentPageUrl, firstPaymentProviderUrl) :
-        "unexpected page url: " + currentPageUrl + " should be: " + firstPaymentProviderUrl;
+    assertThat(currentPageUrl).as("current page url").isEqualTo(firstPaymentProviderUrl);
   }
 
   @Test(dependsOnMethods = "searchPaymentProvider")
@@ -124,8 +119,6 @@ public class CommunalPaymentsTest extends AbstractTest {
         .clickCommunalPayments()
         .assureOrSwitchRegion("Петербург");
 
-    List<String> items = mainPage.getPaymentTitles().stream().filter(e -> e.contains(FIRST_PAYMENT_PROVIDER))
-        .collect(Collectors.toList());
-    assert items.size() == 0 : "should be no such items: " + items;
+    assertThat(mainPage.getPaymentTitles()).as("Petersburg payment providers").doesNotContain(FIRST_PAYMENT_PROVIDER);
   }
 }

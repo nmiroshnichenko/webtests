@@ -3,6 +3,7 @@ package ru.tinkoff.page;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
@@ -100,7 +101,7 @@ public class MainPage extends AbstractPage {
     getSearchResults().stream().filter(e -> Objects.equals(e.getText(), title)).findFirst().get()
         .click();
     driver.waitForPageToLoad();
-    assert getKnowArrearsLink().isDisplayed() : "the page was not fully loaded";
+    assertThat(getKnowArrearsLink().isDisplayed()).as("know arrears link is displayed").isTrue();
     return this;
   }
 
@@ -123,7 +124,7 @@ public class MainPage extends AbstractPage {
       element.click();
     }
     String resultRegion = getCurrentRegion();
-    assert resultRegion.contains(expectedRegion) : "current region: " + resultRegion;
+    assertThat(resultRegion).as("current region").contains(expectedRegion);
     return this;
   }
 
