@@ -5,28 +5,33 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import ru.tinkoff.AbstractTest;
 import ru.tinkoff.page.MainPage;
+import ru.tinkoff.page.payments.PaymentsSearchResultsPage;
+import ru.tinkoff.page.payments.communal.CommunalPaymentsPage;
+import ru.tinkoff.page.payments.communal.moscow.MoscowPublicUtilitiesPageHeaderBlock;
+import ru.tinkoff.page.payments.communal.moscow.MoscowPublicUtilitiesPaymentPage;
 
 @Test(description = "Тесты раздела /Коммунальные платежи/")
 public class CommunalPaymentsTest extends AbstractTest {
   private static final String FIRST_PAYMENT_PROVIDER = "ЖКУ-Москва";
   private String firstPaymentProviderUrl;
-  private MainPage mainPage;
 
   @Test(description = "Перейти на страницу /Платежи/, открыть категорию /Коммунальные платежи/," +
       " выбрать первого из списка поставщика услуг - /" + FIRST_PAYMENT_PROVIDER + "/," +
       " перейти на /Оплатить ЖКУ в Москве/")
   public void switchRegionMoscow() throws Exception {
-    mainPage = new MainPage().open()
+    CommunalPaymentsPage communalPaymentsPage = new MainPage().open()
         .clickPayments()
         .clickCommunalPayments()
-        .assureOrSwitchRegion("Москв");
+        .openSelectRegionBlock()
+        .selectRegion("г. Москва");
 
-    String firstPaymentProvider = mainPage.getPaymentTitles().stream().findFirst().get();
+    String firstPaymentProvider = communalPaymentsPage.getPaymentTitles().stream().findFirst().get();
     assertThat(firstPaymentProvider).as("first payment provider").isEqualTo(FIRST_PAYMENT_PROVIDER);
 
-    mainPage.clickPayment(FIRST_PAYMENT_PROVIDER);
-    mainPage.clickRenderPayment();
-    firstPaymentProviderUrl = mainPage.getCurrentPageUrl();
+    firstPaymentProviderUrl = communalPaymentsPage
+        .openPaymentProviderPage(FIRST_PAYMENT_PROVIDER, MoscowPublicUtilitiesPageHeaderBlock.class)
+        .clickRenderPayment()
+        .getCurrentPageUrl();
   }
 
   @DataProvider
@@ -46,7 +51,10 @@ public class CommunalPaymentsTest extends AbstractTest {
       description = "Проверить сообщения об ошибках для всех типов невалидных значений кода плательщика"
   )
   public void invalidProviderPayerCode(String inputValue, String expectedError) throws Exception {
-    checkInvalidFieldValues(expectedError, mainPage.fillProviderPayerCode(inputValue).getProviderPayerCodeError());
+    checkInvalidFieldValues(
+        expectedError,
+        new MoscowPublicUtilitiesPaymentPage().fillProviderPayerCode(inputValue).getProviderPayerCodeError()
+    );
   }
 
   @DataProvider
@@ -65,7 +73,10 @@ public class CommunalPaymentsTest extends AbstractTest {
       description = "Проверить сообщения об ошибках для всех типов невалидных значений периода оплаты"
   )
   public void invalidProviderPeriod(String inputValue, String expectedError) throws Exception {
-    checkInvalidFieldValues(expectedError, mainPage.fillProviderPeriod(inputValue).getProviderPeriodError());
+    checkInvalidFieldValues(
+        expectedError,
+        new MoscowPublicUtilitiesPaymentPage().fillProviderPeriod(inputValue).getProviderPeriodError()
+    );
   }
 
   @DataProvider
@@ -85,12 +96,15 @@ public class CommunalPaymentsTest extends AbstractTest {
       description = "Проверить сообщения об ошибках для всех типов невалидных значений суммы платежа"
   )
   public void invalidAccountAmount(String inputValue, String expectedError) throws Exception {
-    checkInvalidFieldValues(expectedError, mainPage.fillAccountAmount(inputValue).getAccountAmountError());
+    checkInvalidFieldValues(
+        expectedError,
+        new MoscowPublicUtilitiesPaymentPage().fillAccountAmount(inputValue).getAccountAmountError()
+    );
   }
 
   private void checkInvalidFieldValues(String expectedError, String actualError) {
     assertThat(actualError).as("error message").isEqualTo(expectedError);
-    mainPage.refreshPage();
+    new MoscowPublicUtilitiesPaymentPage().refreshPage();
   }
 
   @Test(
@@ -100,25 +114,30 @@ public class CommunalPaymentsTest extends AbstractTest {
           " нажатием на найденный элемент перейти на страницу поставщика, убедиться, что страница совпадает" +
           " со страницей, на которую перешли из рубрикатора")
   public void searchPaymentProvider() throws Exception {
-    mainPage
+    new MainPage()
         .clickPayments()
         .searchFor(FIRST_PAYMENT_PROVIDER);
 
-    String firstSearchResultTitle = mainPage.getSearchResultsTitles().get(0);
+    String firstSearchResultTitle = new PaymentsSearchResultsPage().getSearchResultsTitles().get(0);
     assertThat(firstSearchResultTitle).as("first search result title").isEqualTo(FIRST_PAYMENT_PROVIDER);
 
-    mainPage.clickSearchResult(FIRST_PAYMENT_PROVIDER);
-    String currentPageUrl = mainPage.getCurrentPageUrl();
+    MoscowPublicUtilitiesPageHeaderBlock moscowPublicUtilitiesPage = new PaymentsSearchResultsPage()
+        .clickSearchResult(FIRST_PAYMENT_PROVIDER, MoscowPublicUtilitiesPageHeaderBlock.class);
+    assertThat(moscowPublicUtilitiesPage.getKnowArrearsLink().isDisplayed())
+        .as("know arrears link is displayed").isTrue();
+    String currentPageUrl = moscowPublicUtilitiesPage.getCurrentPageUrl();
     assertThat(currentPageUrl).as("current page url").isEqualTo(firstPaymentProviderUrl);
   }
 
   @Test(dependsOnMethods = "searchPaymentProvider")
   public void switchRegionPetersburg() throws Exception {
-    mainPage
+    CommunalPaymentsPage communalPaymentsPage = new MainPage()
         .clickPayments()
         .clickCommunalPayments()
-        .assureOrSwitchRegion("Петербург");
+        .openSelectRegionBlock()
+        .selectRegion("г. Санкт-Петербург");
 
-    assertThat(mainPage.getPaymentTitles()).as("Petersburg payment providers").doesNotContain(FIRST_PAYMENT_PROVIDER);
+     assertThat(communalPaymentsPage.getPaymentTitles()).as("Petersburg payment providers")
+        .doesNotContain(FIRST_PAYMENT_PROVIDER);
   }
 }

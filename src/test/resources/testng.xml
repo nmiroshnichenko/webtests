@@ -1,6 +1,6 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="web tests" verbose="1">
-    <test name="all web tests" parallel="classes" thread-count="2">
+<suite name="web tests" verbose="3">
+    <test name="all web tests" parallel="classes" thread-count="1">
         <packages>
             <package name="ru.tinkoff.*"/>
         </packages>
